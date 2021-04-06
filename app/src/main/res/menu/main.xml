@@ -10,9 +10,9 @@
         android:title="@string/newgame"/>
 
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_share"
         android:orderInCategory="100"
-        app:showAsAction="never"
-        android:title="@string/action_settings"/>
+        app:showAsAction="always"
+        android:title="@string/action_share"/>
 
 </menu>
