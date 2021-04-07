@@ -55,11 +55,14 @@ class MainActivity : AppCompatActivity() {
         // Menu items
         pause.setOnClickListener {
             game!!.running = false
+            game!!.isPuased = true
+            gameView.invalidate()
         }
 
         startButton.setOnClickListener {
             if (!game!!.isGameOver && !game!!.isGameWon) {
                 game!!.running = true
+                game!!.isPuased = false
             } else {
                 Toast.makeText(this, "Start a NEW GAME or share your score!", Toast.LENGTH_SHORT).show()
             }
@@ -116,8 +119,8 @@ class MainActivity : AppCompatActivity() {
             //just to make sure if the app is killed, that we stop the timer.
             game!!.timer--
             timeLeft.text = getString(R.string.timeLeft, game!!.timer)
-            game!!.gameOver()
             gameView!!.invalidate()
+            game!!.isGameOver()
         }
     }
     private val timerTick = Runnable {
@@ -161,16 +164,19 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
 
-        // Share score
+        // Share the score
         if (id == R.id.action_share) {
             val sendIntent: Intent = Intent().apply {
                 action = Intent.ACTION_SEND
+
+                // The share intent body
                 putExtra(Intent.EXTRA_TEXT, "I've just gathered ${game?.points} points with ${game?.counter} seconds left in Catalin's KotlinPacman. Can you beat my score?")
                 type = "text/plain"
             }
             val shareIntent = Intent.createChooser(sendIntent, "Share Highscore!")
             startActivity(shareIntent)
 
+        // New game
         } else if (id == R.id.action_newGame) {
             Toast.makeText(this, "New Game clicked", Toast.LENGTH_SHORT).show()
             game?.newGame()

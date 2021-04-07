@@ -22,11 +22,13 @@ class Game(private var context: Context, view: TextView) {
     private var pointsView: TextView = view
     var points: Int = 0
 
+    // Bitmaps
     var pacBitmap: Bitmap
     var coinBitmap: Bitmap
     var enemyBitmap: Bitmap
     var gameOverBitmap: Bitmap
     var gameWonBitmap: Bitmap
+    var gamePausedBitmap: Bitmap
 
     // pacman starting position
     var pacx: Int = 0
@@ -37,8 +39,9 @@ class Game(private var context: Context, view: TextView) {
     var counter: Int = 0
     var timer: Int = 30
 
-    // running, over & won
+    // game status
     var running: Boolean = false
+    var isPuased: Boolean = false
     var isGameOver: Boolean = false
     var isGameWon: Boolean = false
 
@@ -72,6 +75,7 @@ class Game(private var context: Context, view: TextView) {
         enemyBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.enemy)
         gameOverBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.game_over_png_small)
         gameWonBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.you_win_small)
+        gamePausedBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.paused_small)
     }
 
     fun setGameView(view: GameView) {
@@ -90,6 +94,7 @@ class Game(private var context: Context, view: TextView) {
     fun newGame() {
         pacx = 50
         pacy = 400
+        direction = 0 // if not set to 0 it will move in the last used direction upon start
 
         coins = ArrayList<GoldCoin>()
 
@@ -97,9 +102,13 @@ class Game(private var context: Context, view: TextView) {
 
         points = 0
         pointsView.text = "${context.resources.getString(R.string.points)} $points"
+
         timer = 20
         counter = 0
+
+        // Reset all the game status vars
         running = false
+        isPuased = false
         isGameOver = false
         isGameWon = false
 
@@ -117,13 +126,14 @@ class Game(private var context: Context, view: TextView) {
         enemiesInitialized = true
     }
 
-    fun gameOver() {
+    //TODO check if game over because you run out of time
+    fun isGameOver() {
         if (timer == 0) {
             timer = 0
             counter = 0
             running = false
             isGameOver = true
-            Toast.makeText(context, "You've ran out of time!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Time out! Game Over!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -134,11 +144,10 @@ class Game(private var context: Context, view: TextView) {
 
     fun movePacmanRight(pixels: Int) {
         if (pacx + pixels + pacBitmap.width < w) {
-            pacx = pacx + pixels
+            pacx += pixels
             doCollisionCheck()
             direction = 4
         }
-
         if (pacBitmap != BitmapFactory.decodeResource(context.resources, R.drawable.pacman_right)) {
             pacBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pacman_right)
         }
@@ -146,7 +155,7 @@ class Game(private var context: Context, view: TextView) {
 
     fun movePacmanLeft(pixels: Int) {
         if (pacx - pixels > 0) {
-            pacx = pacx - pixels
+            pacx -= pixels
             doCollisionCheck()
             direction = 3
         }
@@ -157,7 +166,7 @@ class Game(private var context: Context, view: TextView) {
 
     fun movePacmanUp(pixels: Int) {
         if (pacy - pixels > 0) {
-            pacy = pacy - pixels
+            pacy -= pixels
             doCollisionCheck()
             direction = 1
         }
@@ -168,7 +177,7 @@ class Game(private var context: Context, view: TextView) {
 
     fun movePacmanDown(pixels: Int) {
         if (pacy + pixels + pacBitmap.height < h) {
-            pacy = pacy + pixels
+            pacy += pixels
             doCollisionCheck()
             direction = 2
         }
@@ -216,7 +225,10 @@ class Game(private var context: Context, view: TextView) {
                     "${context.resources.getString(R.string.points)} $points".also { pointsView.text = it }
                     coin.taken = true
                 }
+
+                // win condition is number of points = number of initialised coins
                 if (points == numOfCoins) {
+                    //stop the game
                     running = false
                     isGameWon = true
                     Toast.makeText(context, "Yay! You won!", Toast.LENGTH_SHORT).show()
@@ -224,16 +236,19 @@ class Game(private var context: Context, view: TextView) {
             }
         }
 
+        //enemy collision
         for (enemy in enemies) {
-
             if ((pacx < enemy.enemyx + enemyBitmap.width &&
                             pacx + pacBitmap.width > enemy.enemyx &&
                             pacy < enemy.enemyy + enemyBitmap.height &&
                             pacy + pacBitmap.height > enemy.enemyy)) {
+                //stop the game
                 running = false
+                isGameOver = true
+
+                //draw the defeated pacman
                 pacBitmap = BitmapFactory.decodeResource(context.resources, R.drawable.pacman_dead)
-                gameOver()
-                Toast.makeText(context, "Game over!", Toast.LENGTH_SHORT).show()
+
                 gameView?.invalidate() //redraw screen
             }
         }

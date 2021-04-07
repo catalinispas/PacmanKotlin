@@ -33,9 +33,11 @@ class GameView : View {
     //In the onDraw we put all our code that should be
     //drawn whenever we update the screen.
     override fun onDraw(canvas: Canvas) {
+
         //Here we get the height and weight
         h = canvas.height
         w = canvas.width
+
         //update the size for the canvas to the game.
         game?.setSize(h, w)
 
@@ -44,27 +46,26 @@ class GameView : View {
         if (!(game!!.coinsInitialized))
             game?.initializeGoldcoins()
 
-
-        //Making a new paint object
+        // Making a new paint object
         val paint = Paint()
         canvas.drawColor(Color.WHITE) //clear entire canvas to WHITE color
 
-        //draw the pacman
+        // draw the pacman
         canvas.drawBitmap(game!!.pacBitmap, game?.pacx!!.toFloat(),
                 game?.pacy!!.toFloat(), paint)
 
-        //draw the coins
+        // draw the coins
         for (coin in game!!.coins) {
             if (!coin.taken){
                 canvas.drawBitmap(game!!.coinBitmap, coin.coinX.toFloat(), coin.coinY.toFloat(), paint)
             }
         }
 
-        //if enemies are not initialized
+        // if enemies are not initialized
         if (!(game!!.enemiesInitialized))
             game?.initializeEnemy()
 
-        //draw the enemy
+        // draw the enemy
         for (enemy in game!!.enemies) {
             canvas.drawBitmap(game!!.enemyBitmap, enemy.enemyx.toFloat(),
                     enemy.enemyy.toFloat(), paint)
@@ -74,6 +75,8 @@ class GameView : View {
         game?.doCollisionCheck()
         super.onDraw(canvas)
 
+        // check for game paused
+        if (game!!.isPuased) { canvas.drawBitmap(game!!.gamePausedBitmap, w/2-game!!.gamePausedBitmap.width/2.toFloat(), h/2-game!!.gamePausedBitmap.height/2.toFloat(), paint) }
 
         // check for game over or game won
         if (game!!.isGameOver) { canvas.drawBitmap(game!!.gameOverBitmap, w/2-game!!.gameOverBitmap.width/2.toFloat(), h/2-game!!.gameOverBitmap.height/2.toFloat(), paint) }
