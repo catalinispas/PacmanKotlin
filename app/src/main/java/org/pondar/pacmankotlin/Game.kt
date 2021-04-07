@@ -126,7 +126,6 @@ class Game(private var context: Context, view: TextView) {
         enemiesInitialized = true
     }
 
-    //TODO check if game over because you run out of time
     fun isGameOver() {
         if (timer == 0) {
             timer = 0
